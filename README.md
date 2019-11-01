@@ -5,5 +5,13 @@ A new `TMXTiledmapEx` class that supports animated tile of TMX tiledmap in layer
 
 Add `TMXPropertyAnimation` into the seconed enum of CCTMXXMLParser.h
 
-Then just copy everything into your project and use `TMXTiledmapEx` in the same way like cocos2d::TMXTiledmap.
+Then just copy everything into your project and use `TMXTiledmapEx` in the same way like `cocos2d::TMXTiledmap`.
+
+## ShowCase
+
+![In Tiled editor](https://github.com/DEAGS3000/cocos2dx-animated-tile-support/raw/master/showcase-tiled.gif)
+
+![In App](https://github.com/DEAGS3000/cocos2dx-animated-tile-support/raw/master/showcase-app.gif)
+
+
 
