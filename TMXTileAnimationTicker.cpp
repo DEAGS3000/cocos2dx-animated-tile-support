@@ -19,7 +19,6 @@ namespace pm
             return;
         for(auto &task : _tasks)
         {
-            _timeElapsed += dt;
             task.update(dt);
         }
     }

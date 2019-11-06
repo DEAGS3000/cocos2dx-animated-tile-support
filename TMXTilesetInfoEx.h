@@ -10,6 +10,7 @@ namespace pm
         TMXFrame(uint32_t tileID, float duration);
         uint32_t _tileID;
         float _duration;  // 毫秒
+        // TODO: 应当把每个帧的sprite单独缓存一份实例供复用
     };
 
     struct TMXAnimation

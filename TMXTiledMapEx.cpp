@@ -207,11 +207,6 @@ namespace pm
                     {
                         layer->_tiles[_xmlTileIndex++] = gid;
                     }
-                    // FIXME: 自己加的
-//                    TMXTilesetInfoEx* info = tmxMapInfo->getTilesets().back();
-//                    tmxMapInfo->setParentGID(info->_firstGid + attributeDict["id"].asInt());
-//                    tmxMapInfo->getTileProperties()[tmxMapInfo->getParentGID()] = Value(ValueMap());
-//                    tmxMapInfo->setParentElement(TMXPropertyTile);
                 }
                 else
                 {
@@ -524,32 +519,17 @@ namespace pm
             }
             else if(elementName == "animation")
             {
-                //if (tmxMapInfo->getParentElement() == TMXPropertyTile)
-                //{
-                    // TODO: 创建animation并存储
                     TMXTilesetInfoEx* info = tmxMapInfo->getTilesets().back();
                     info->_animationInfo[tmxMapInfo->getParentGID()] = new TMXAnimation(tmxMapInfo->getParentGID());
                     //tmxMapInfo->setParentGID(info->_firstGid + attributeDict["id"].asInt());
                     //tmxMapInfo->getTileProperties()[tmxMapInfo->getParentGID()] = Value(ValueMap());
                     tmxMapInfo->setParentElement(TMXPropertyAnimation);
-                    // TODO: 记录当前tile为animation tile
-                //}
-                //else
-                //{
-                    // 当解析到一个不从属于Layer的Tile，计算出它的gid，获取它的属性，将它的Parent设为Tile？？？不懂
-                    // 有property子标签的应该是tileset里面对tile的定义
-//                    TMXTilesetInfoEx* info = tmxMapInfo->getTilesets().back();
-//                    tmxMapInfo->setParentGID(info->_firstGid + attributeDict["id"].asInt());
-//                    tmxMapInfo->getTileProperties()[tmxMapInfo->getParentGID()] = Value(ValueMap());
-//                    tmxMapInfo->setParentElement(TMXPropertyTile);
-//CCLOG("错误, nimation不从属于tilea!\n");
-                //}
             }
             else if(elementName == "frame")
             {
                 TMXTilesetInfoEx* info = tmxMapInfo->getTilesets().back();
                 auto animInfo = info->_animationInfo[tmxMapInfo->getParentGID()];
-                // 这里我尝试算出gid
+                // calculate gid of frame
                 animInfo->_frames.push_back(TMXFrame(info->_firstGid + attributeDict["tileid"].asInt(), attributeDict["duration"].asFloat()));
 //                if (tmxMapInfo->getParentElement() == TMXPropertyAnimation)
 //                {
@@ -757,6 +737,7 @@ namespace pm
 
         auto& layers = mapInfo->getLayers();
         for (const auto &layerInfo : layers) {
+            // TODO: 这里其实可以提供一个选项，是否生成不可见图层
             if (layerInfo->_visible) {
                 TMXLayerEx *child = parseLayer(layerInfo, mapInfo);
                 if (child == nullptr) {
@@ -797,6 +778,7 @@ namespace pm
 
     TMXTilesetInfoEx *TMXTiledMapEx::tilesetForLayer(TMXLayerInfoEx *layerInfo, TMXMapInfoEx *mapInfo)
     {
+	    // FIXME: 在这个函数中，如果一个图层是空图层，就会被优化掉
         auto height = static_cast<uint32_t>(layerInfo->_layerSize.height);
         auto width  = static_cast<uint32_t>(layerInfo->_layerSize.width);
         auto& tilesets = mapInfo->getTilesets();
@@ -834,18 +816,6 @@ namespace pm
 
         return nullptr;
     }
-
-//    void TMXTiledMapEx::runTileAnimations()
-//    {
-//        for (auto& child : _children)
-//        {
-//            TMXLayerEx* layer = dynamic_cast<TMXLayerEx*>(child);
-//            if(layer)
-//            {
-//                layer->startAllTileAnims();
-//            }
-//        }
-//    }
 
     void TMXTiledMapEx::update(float dt)
     {

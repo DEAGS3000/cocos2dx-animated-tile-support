@@ -86,7 +86,6 @@ namespace pm
     // TMXLayerEx - setup Tiles
     void TMXLayerEx::setupTilesEx()
     {
-        // TODO: 添加动画块应该就是在这个函数里
         // Optimization: quick hack that sets the image size on the tileset
         _tileSet->_imageSize = _textureAtlas->getTexture()->getContentSizeInPixels();
 
@@ -137,8 +136,6 @@ namespace pm
                 // FIXME:: gid == 0 --> empty tile
                 if (gid != 0)
                 {
-                    // FIXME: 我加的，添加动画块
-                    //if(*(std::find_if(_tileSet->_animationInfo.begin(), _tileSet->_animationInfo.end(), [=] (const TMXAnimation* a)->bool { return a->_tileID == gid; } )))
                     if(_tileSet->_animationInfo[gid])
                     {
                             this->appendTileForGIDEx(gid, Vec2(newX, y));
@@ -147,89 +144,10 @@ namespace pm
                     }
                     else
                         this->appendTileForGIDEx(gid, Vec2(newX, y));
-
-                        //this->appendAnimTileForGID(gid, Vec2(newX, y));
-
                 }
             }
         }
     }
-
-//    Sprite *TMXLayerEx::appendAnimTileForGID(uint32_t gid, const Vec2 &pos)
-//    {
-//        if (gid != 0 && (static_cast<int>((gid & kTMXFlippedMask)) - _tileSet->_firstGid) >= 0)
-//        {
-//            Rect rect = _tileSet->getRectForGID(gid);
-//            rect = CC_RECT_PIXELS_TO_POINTS(rect);
-//
-//            // Z could be just an integer that gets incremented each time it is called.
-//            // but that wouldn't work on layers with empty tiles.
-//            // and it is IMPORTANT that Z returns an unique and bigger number than the previous one.
-//            // since _atlasIndexArray must be ordered because `bsearch` is used to find the GID for
-//            // a given Z. (github issue #16512)
-//            intptr_t z = getZForPos(pos);
-//
-//            // TODO: 动画块的重用与普通块的重用要分开
-//            // FIXME: 如果使用下面这句，所有动画块会是同一个tile，说是为了优化，不知道怎么做的
-//            // Sprite *tile = reusedTileWithRect(rect);
-//            Sprite *tile = Sprite::createWithTexture(_textureAtlas->getTexture(), rect);
-//            tile->setBatchNode(this);
-//            tile->retain();
-//
-//            setupTileSprite(tile ,pos ,gid);
-//
-//            // 创建动画，如果已经有了就不创建了
-//            if(!_tileAnimationActionDict.at(gid))
-//            {
-//                Vector<AnimationFrame *> animation_frames;
-//                auto animation_info = _tileSet->_animationInfo[gid];
-//                for(auto &frame : animation_info->_frames)
-//                {
-//                    // FIXME:: delayUnits先设为0
-//                    animation_frames.pushBack(AnimationFrame::create(SpriteFrame::createWithTexture(_textureAtlas->getTexture(), rect), frame._tileID,
-//                                                                     ValueMap()));
-//                }
-//                auto tile_animation = Animation::create(animation_frames, 0.001f);  //TODO: 这里还有个循环次数，没填。delayPerUnit记得改
-//                auto action = RepeatForever::create(Animate::create(tile_animation));
-//                //action->retain();
-//                this->_tileAnimationActionDict.insert(gid, action);
-//            }
-//            // gid到对应的tile数组的map，如果没有，要创建
-//            if(!_animTileDict.count(gid))
-//            {
-//                _animTileDict.insert(std::pair<uint32_t, Vector<Sprite*>>(gid, Vector<Sprite*>()));
-//            }
-//
-//            _animTileDict[gid].pushBack(tile);
-//            //tile->retain();
-//
-//
-//            // FIXME: 启动tile动画的代码，因为还没有优雅的方式储存动画和tile的关系，就先在这里直接创建并启动了
-//            //auto action = RepeatForever::create(Animate::create(tile_animation));
-//            //_tileAnimationActions.pushBack(action);
-//            //this->runAction(action);
-//
-//
-//            // optimization:
-//            // The difference between appendTileForGID and insertTileforGID is that append is faster, since
-//            // it appends the tile at the end of the texture atlas
-//            ssize_t indexForZ = _atlasIndexArray->num;
-//
-//            // don't add it using the "standard" way.
-//            insertQuadFromSprite(tile, indexForZ);
-//
-//            // append should be after addQuadFromSprite since it modifies the quantity values
-//            ccCArrayInsertValueAtIndex(_atlasIndexArray, (void*)z, indexForZ);
-//
-//            // Validation for issue #16512
-//            CCASSERT(_atlasIndexArray->num == 1 ||
-//                     _atlasIndexArray->arr[_atlasIndexArray->num-1] > _atlasIndexArray->arr[_atlasIndexArray->num-2], "Invalid z for _atlasIndexArray");
-//
-//            return tile;
-//        }
-//
-//        return nullptr;
-//    }
 
 
     // used only when parsing the map. useless after the map was parsed
@@ -320,6 +238,7 @@ namespace pm
         rect = Rect(rect.origin.x / _contentScaleFactor, rect.origin.y / _contentScaleFactor, rect.size.width/ _contentScaleFactor, rect.size.height/ _contentScaleFactor);
         int z = (int)((int) pos.x + (int) pos.y * _layerSize.width);
 
+        // TODO: 这个可以优化
         Sprite *tile = reusedTileWithRect(rect);
 
         setupTileSprite(tile ,pos ,gid);
@@ -467,25 +386,6 @@ namespace pm
 
         return _reusedTile;
     }
-
-//    void TMXLayerEx::startAllTileAnims()
-//    {
-//        // FIXME: 创建Action的工作本来应该在别处，先放到这里测试一下
-//        for(auto &pair : _tileAnimationActionDict)
-//        {
-//            for(auto &sprite : _animTileDict[pair.first])
-//            {
-//                if(sprite==_animTileDict[pair.first].front())
-//
-//                // cocos会把tile优化掉。这里可以强行启用，但不够优雅。还是避免优化掉
-//                this->appendChild(sprite);
-//                //sprite->scheduleUpdate();
-//                sprite->runAction(pair.second->clone());
-//            }
-//            // TODO: runaction的主体是谁？layer还是tile
-//        }
-//    }
-
 
     void TMXLayerEx::onEnter()
     {
