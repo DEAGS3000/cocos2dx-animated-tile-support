@@ -1,6 +1,8 @@
 # cocos2dx-animated-tile-support
 A new `TMXTiledmapEx` class that supports animated tile of TMX tiledmap in layer-level. Animated tiles are still rendered with `SpriteBatchNode`.
 
+Now this work has beeb merged into Cocos2d-x, it can support animated tiles nativly, with another way to tick the animation.
+
 ## How To Use
 
 Add `TMXPropertyAnimation` into the seconed enum of CCTMXXMLParser.h
